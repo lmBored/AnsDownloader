@@ -109,7 +109,7 @@ def download_resource(session: requests.Session, url: str, save_path: Path) -> b
         save_path.write_bytes(response.content)
         return True
     except Exception as e:
-        print(f"    Warning: Failed to download {url[:80]}...: {e}")
+        print(f"Warning: Failed to download {url[:80]}...: {e}")
         return False
 
 
@@ -397,7 +397,7 @@ def process_css_file(
     try:
         css_content = css_path.read_text(encoding="utf-8")
     except Exception as e:
-        print(f"    Warning: Could not read CSS file {css_path}: {e}")
+        print(f"Warning: Could not read CSS file {css_path}: {e}")
         return
 
     # Find all url() references in CSS
@@ -408,7 +408,7 @@ def process_css_file(
     if not urls_found:
         return
 
-    print(f"    Processing CSS: found {len(urls_found)} url() references")
+    print(f"Processing CSS: found {len(urls_found)} url() references")
 
     # Track replacements to make
     replacements = {}
@@ -438,7 +438,7 @@ def process_css_file(
 
         # Download the resource if not already downloaded
         if not local_path.exists() and download_resource(session, absolute_url, local_path):
-            print(f"      Downloaded: {url_clean[:60]}...")
+            print(f"Downloaded: {url_clean[:60]}...")
 
         # Calculate relative path from CSS file to the downloaded resource
         if local_path.exists():
@@ -462,9 +462,9 @@ def process_css_file(
     # Save the modified CSS
     try:
         css_path.write_text(modified_css, encoding="utf-8")
-        print(f"    Updated CSS with {len(replacements)} local paths")
+        print(f"Updated CSS with {len(replacements)} local paths")
     except Exception as e:
-        print(f"    Warning: Could not save modified CSS {css_path}: {e}")
+        print(f"Warning: Could not save modified CSS {css_path}: {e}")
 
 
 def process_and_save_html(
@@ -733,14 +733,14 @@ def fix_navigation(output_dir: Path, url_components: dict[str, str]) -> None:
 
     overview = output_dir / "overview.html"
     if not overview.exists():
-        print("  Warning: overview.html not found, skipping navigation fix")
+        print("Warning: overview.html not found, skipping navigation fix")
         return
 
     mapping = build_submission_mapping(overview)
     if not mapping:
-        print("  Warning: Could not build submission mapping")
+        print("Warning: Could not build submission mapping")
     else:
-        print(f"  Built mapping for {len(mapping)} questions")
+        print(f"Built mapping for {len(mapping)} questions")
 
     html_files = list(output_dir.glob("*.html"))
     total_fixes = 0
@@ -749,14 +749,14 @@ def fix_navigation(output_dir: Path, url_components: dict[str, str]) -> None:
         if mapping:
             fixes = fix_go_to_links(html_file, url_components, mapping)
             if fixes > 0:
-                print(f"    Fixed {fixes} links in {html_file.name}")
+                print(f"Fixed {fixes} links in {html_file.name}")
                 total_fixes += fixes
 
         removed = sanitize_offline_navigation(html_file)
         if removed > 0:
-            print(f"    Removed {removed} remote nav attributes in {html_file.name}")
+            print(f"Removed {removed} remote nav attributes in {html_file.name}")
 
-    print(f"  Total: Fixed {total_fixes} navigation links")
+    print(f"Total: Fixed {total_fixes} navigation links")
 
 
 KATEX_FONT_PATTERN = re.compile(r"KaTeX_[A-Za-z0-9_-]+(?:\.(?:woff2|woff|ttf|otf|eot))?")
@@ -890,7 +890,7 @@ def try_auto_download_font(
         if session is None:
             session = requests.Session()
 
-        print(f"    Auto-downloading: {filename}")
+        print(f"Auto-downloading: {filename}")
         response = session.get(cdn_url, timeout=30)
         response.raise_for_status()
 
@@ -898,7 +898,7 @@ def try_auto_download_font(
         local_path.write_bytes(response.content)
         return True
     except Exception as e:
-        print(f"    Warning: Could not auto-download {filename}: {e}")
+        print(f"Warning: Could not auto-download {filename}: {e}")
         return False
 
 
@@ -941,10 +941,10 @@ def check_and_report_missing_assets(output_dir: Path) -> list[tuple[str, Path]]:
             still_missing.append((url, path))
 
     if auto_downloaded > 0:
-        print(f"  Auto-downloaded {auto_downloaded} fonts from CDN")
+        print(f"Auto-downloaded {auto_downloaded} fonts from CDN")
 
     if katex_downloaded > 0:
-        print(f"  Auto-downloaded {katex_downloaded} KaTeX fonts from CDN")
+        print(f"Auto-downloaded {katex_downloaded} KaTeX fonts from CDN")
 
     if katex_missing:
         existing_paths = {path for _, path in still_missing}
@@ -954,9 +954,7 @@ def check_and_report_missing_assets(output_dir: Path) -> list[tuple[str, Path]]:
                 existing_paths.add(path)
 
     if still_missing:
-        print("\n" + "=" * 50)
         print("MISSING ASSETS (could not auto-download)")
-        print("=" * 50)
         print(f"Found {len(still_missing)} missing font/asset files:")
         for url, path in still_missing[:10]:  # Show first 10
             print(f"  - {url}")
@@ -965,7 +963,6 @@ def check_and_report_missing_assets(output_dir: Path) -> list[tuple[str, Path]]:
             print(f"  ... and {len(still_missing) - 10} more")
         print("\nTo download manually, place the files in:")
         print(f"  {resources_dir.absolute()}")
-        print("=" * 50)
 
     return still_missing
 
@@ -1015,7 +1012,7 @@ def download_exam(exam_url: str, session: requests.Session) -> None:
 
         # Save with resources
         save_path = output_dir / f"question_{q_num}.html"
-        print(f"  Saving to: {save_path}")
+        print(f"Saving to: {save_path}")
         process_and_save_html(session, q_html, save_path, resources_dir, q_url)
 
     # Also save the initial page (might have overview info)
@@ -1029,7 +1026,6 @@ def download_exam(exam_url: str, session: requests.Session) -> None:
     # Check for missing assets
     missing_assets = check_and_report_missing_assets(output_dir)
 
-    print(f"\n{'=' * 50}")
     print("Download complete!")
     print(f"Files saved to: {output_dir.absolute()}")
     print(f"Total questions: {len(questions)}")
