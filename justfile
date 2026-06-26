@@ -247,7 +247,7 @@ serve:
         exit 1
     fi
 
-    printf "Run python server silently? (y/n): "
+    printf "Run python server silently? ([y]/n): "
     read silentt
 
     IFS=$'\t' read -r selected course_info title html_count complete <<< "${rows[$choice]}"
